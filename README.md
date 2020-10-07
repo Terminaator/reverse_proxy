@@ -15,8 +15,10 @@ run from CMD _**start.bat**_
     func Run(res *http.Response) { res.Header.Set("access-control-allow-origin", "http://localhost:3000") }
     
 ## reverse proxy configuration example explanation
-Inside CODE variable symbol _**?**_ will be replaced with linebreaks. \
-Symbol **_^_** is used by bat file for defining linebreak. \
+Inside CODE variable symbol _**?**_ will be replaced with linebreaks.
+
+Symbol **_^_** is used by bat file for defining linebreak. 
+
 CODE variable must only contain three things to run reverse proxy successfully.
 
     //CODE is parsed and runned at runtime

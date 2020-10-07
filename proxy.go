@@ -1,14 +1,17 @@
 package main
 
 import (
-	"github.com/traefik/yaegi/interp"
-	"github.com/traefik/yaegi/stdlib"
+	"bytes"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/traefik/yaegi/interp"
+	"github.com/traefik/yaegi/stdlib"
 )
 
 var (
@@ -24,6 +27,22 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
+func logRequest(req *http.Request) {
+	body, _ := ioutil.ReadAll(req.Body)
+	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	log.Println("request body:\n", string(body))
+	log.Println("request headers:\n", req.Header)
+}
+
+func logResponse(res *http.Response) {
+	body, _ := ioutil.ReadAll(res.Body)
+	res.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	log.Println("response body:\n", string(body))
+	log.Println("response headers:\n", res.Header)
+}
+
 func redirectRequest(res http.ResponseWriter, req *http.Request) {
 	urlReverse, _ := url.Parse(URL)
 
@@ -31,10 +50,12 @@ func redirectRequest(res http.ResponseWriter, req *http.Request) {
 
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {
+
 		req.URL.Host = urlReverse.Host
 		req.URL.Scheme = urlReverse.Scheme
 		req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
-		log.Printf("request %s%s redirect to %s%s", req.Host, req.URL.Path, urlReverse.Host, req.URL.Path)
+
+		logRequest(req)
 		director(req)
 	}
 
@@ -57,6 +78,8 @@ func redirectRequest(res http.ResponseWriter, req *http.Request) {
 
 		run(res)
 
+		logResponse(res)
+
 		return nil
 	}
 
@@ -76,7 +99,7 @@ func server() {
 	}
 }
 
-func setUp()  {
+func setUp() {
 	log.Println("starting reverse proxy")
 	CODE = strings.ReplaceAll(getEnv("CODE", ""), "?", "\n")
 	log.Println(CODE)
