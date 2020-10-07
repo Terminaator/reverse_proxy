@@ -14,6 +14,7 @@ import (
 	"github.com/traefik/yaegi/stdlib"
 )
 
+//CODE is runnable code
 var (
 	CODE   string
 	URL    string
@@ -55,7 +56,10 @@ func redirectRequest(res http.ResponseWriter, req *http.Request) {
 		req.URL.Scheme = urlReverse.Scheme
 		req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
 
+		log.Printf("request %s%s redirect to %s%s", req.Host, req.URL.Path, urlReverse.Host, req.URL.Path)
+
 		logRequest(req)
+
 		director(req)
 	}
 
@@ -102,11 +106,11 @@ func server() {
 func setUp() {
 	log.Println("starting reverse proxy")
 	CODE = strings.ReplaceAll(getEnv("CODE", ""), "?", "\n")
-	log.Println(CODE)
+	log.Println("go runtime code", CODE)
 	URL = getEnv("REVERSE_PROXY_SERVER_REDIRECT_URL", "")
-	log.Println(URL)
+	log.Println("redirect url", URL)
 	LISTEN = getEnv("REVERSE_PROXY_SERVER", "")
-	log.Println(LISTEN)
+	log.Println("listening", LISTEN)
 }
 
 func main() {
